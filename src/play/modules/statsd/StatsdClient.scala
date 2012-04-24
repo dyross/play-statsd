@@ -39,7 +39,7 @@ trait StatsdClient {
    * @param samplingRate The probability for which to increment. Defaults to 1.
    */
   def increment(key: String, value: Long = 1, samplingRate: Double = 1.0) {
-    safely { maybeSend(statFor(key, value, IncrementSuffix), samplingRate) }
+    safely { maybeSend(statFor(key, value, IncrementSuffix, samplingRate), samplingRate) }
   }
 
   /**
@@ -50,7 +50,7 @@ trait StatsdClient {
    * @param samplingRate The probability for which to increment. Defaults to 1.
    */
   def timing(key: String, millis: Long, samplingRate: Double = 1.0) {
-    safely { maybeSend(statFor(key, millis, TimingSuffix), samplingRate) }
+    safely { maybeSend(statFor(key, millis, TimingSuffix, samplingRate), samplingRate) }
   }
 
   /**
@@ -80,8 +80,10 @@ trait StatsdClient {
    * For counters, it provides something like {@code key:value|c}.
    * For timing, it provides something like {@code key:millis|ms}.
    */
-  private def statFor(key: String, value: Long, suffix: String): String = {
-    "%s.%s:%s|%s".format(statPrefix, key, value, suffix)
+  private def statFor(key: String, value: Long, suffix: String, samplingRate: Double = 1.0): String = {
+    val withoutSamplingRate = "%s.%s:%s|%s".format(statPrefix, key, value, suffix)
+    if (samplingRate >= 1.0 || samplingRate < 0) withoutSamplingRate
+    else withoutSamplingRate + "|@" + samplingRate
   }
 
   /*

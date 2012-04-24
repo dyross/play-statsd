@@ -67,7 +67,7 @@ class StatsdClientSpec extends UnitFlatSpec with ShouldMatchers {
   it should "work with sampling rates" in {
     val client = makeClient
 
-    expect(client.sender -> "test.count:2|c") {
+    expect(client.sender -> "test.count:2|c|@0.51") {
       when(client.random.nextFloat()).thenReturn(0.5f)
       client.increment("count", 1, 0.4)
       client.increment("count", 1, 0.5)
